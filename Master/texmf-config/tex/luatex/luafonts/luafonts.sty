@@ -1,0 +1,62 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{luafonts}[2025/03/03 v2.0 luatex opentype map]
+
+\newif\if@lua@fonts@debug
+\DeclareOption{debug}{\global\@lua@fonts@debugtrue}
+\chardef\otf@dvi@code=0
+\DeclareOption{otfchar}{\global\chardef\otf@dvi@code=0}
+\DeclareOption{otfgid}{\global\chardef\otf@dvi@code=1}
+\DeclareOption{otfgidx}{\global\chardef\otf@dvi@code=2}
+\chardef\place@glyph@on=0
+\DeclareOption{chars}{\global\chardef\place@glyph@on=1}
+\ProcessOptions
+
+\RequirePackage{luatexbase}
+\RequireLuaModule{luafonts}
+
+\if@lua@fonts@debug
+    \directlua{config.luafonts.debug=true}
+\fi
+
+\directlua{%
+    luafonts.extra_maps = (tonumber('\number\otf@dvi@code') == 1);
+    luafonts.place_glyphs = (tonumber('\number\place@glyph@on') > 0);
+    }
+
+\ifcase\number\otf@dvi@code\relax %% \relax as guard
+    \directlua{%
+        luafonts.otfgid=false;
+        luatexbase.add_to_callback('buildpage_filter', luafonts.buildpage_filter_callback, 'luafonts buildpage filter')%
+        if luafonts.place_glyphs then
+            luatexbase.callbacktypes['place_glyph'] = 1
+            luatexbase.add_to_callback('place_glyph', luafonts.place_glyph, 'place_glyph')
+            luafonts.fd = io.open(tex.jobname .. '.chars.csv', 'w')
+        end
+        }%
+\else\relax %% \relax just in case
+    \directlua{%
+        luafonts.otfgid=true;
+        %% mapline special in dvi for opentype fonts
+        %% xxx [lmroman10-regular]:+tlig;  LMRoman10-Regular "LMRoman10-Regular" >$SELFAUTOPARENT/texmf-dist/fonts/opentype/public/lm/lmroman10-regular.otf
+        luatexbase.callbacktypes['font_definition'] = 1
+        luatexbase.add_to_callback('font_definition', luafonts.font_definition, 'luafonts_font_definition')
+        %% switch to use gid in dvi
+        if pdf.setdviencoding ~= nil then
+           pdf.setdviencoding(1)
+        else
+           %% xxx vtex:settings.xdvipsk.opentype={enc=gid}
+           luatexbase.callbacktypes['after_dvi_header'] = 1
+           luatexbase.add_to_callback('after_dvi_header', function(...) return 1 end, 'after_dvi_header')
+        end
+        %% get info about glyphs in dvi
+        luatexbase.callbacktypes['place_glyph'] = 1
+        luatexbase.add_to_callback('place_glyph', luafonts.place_glyph, 'place_glyph')
+        if luafonts.place_glyphs then
+            local fname = tex.jobname .. '.chars.csv'
+            luafonts.fd = io.open(fname, 'w')
+        end
+        luatexbase.add_to_callback('buildpage_filter', luafonts.place_glyph_end, 'buildpage_filter_place_glyph')%
+        }%
+\fi
+\AtBeginDvi{\special{vtex:info.fonts.otf=1}}
+\endinput

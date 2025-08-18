@@ -1,0 +1,8 @@
+% Overwrites mlm.map for bold math script symbols: MnSymbolsSb.enc instead MnSymbolS.enc 
+MnSymbolS-Bold5 MnSymbol-Bold5 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold5.pfb
+MnSymbolS-Bold6 MnSymbol-Bold6 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold6.pfb
+MnSymbolS-Bold7 MnSymbol-Bold7 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold7.pfb
+MnSymbolS-Bold8 MnSymbol-Bold8 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold8.pfb
+MnSymbolS-Bold9 MnSymbol-Bold9 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold9.pfb
+MnSymbolS-Bold10 MnSymbol-Bold10 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold10.pfb
+MnSymbolS-Bold12 MnSymbol-Bold12 "MnSymbolS ReEncodeFont" <[MnSymbolSb.enc <MnSymbol-Bold12.pfb

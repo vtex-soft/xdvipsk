@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{luafonts}
+\pagestyle{empty}
+
+\special{g2umapline=tfm:pzdr/a13,270C}
+\special{g2umapline=tfm:pzdr/a14,270D}
+\special{g2umapline=tfm:pzdr/a15,270E}
+
+\ExplSyntaxOn
+\def\putcharlist#1#2#3#4{%
+    \bgroup
+        \font\testfont=#1\relax \testfont
+        \int_step_function:nnnN{#2}{#3}{#4}\symbol
+        \par
+    \egroup
+    }
+\ExplSyntaxOff
+
+\begin{document}
+
+\font\testfont=pzdr \testfont
+\putcharlist{pzdr}{36}{1}{38}
+
+\end{document}
