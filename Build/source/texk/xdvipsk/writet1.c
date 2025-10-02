@@ -286,9 +286,9 @@ void printf_pr(const char* fmt, ...)
 {
 #ifdef TRACE_PR /* add __FILE__ and __LINE__ to warnings and errors */
     char *fmt_cpy = NULL;
+    int ix;
 #endif
     const char *err_fname = NULL;
-    int ix;
     va_list args;
     va_start(args, fmt);
 
@@ -983,8 +983,19 @@ static void rename_t1_line_glyph_name(const char *glyph_name, char *gl_pt, const
 {
     char *from_pt, *to_pt, *limit_pt;
     int shift;
+#ifdef XDVIPSK
+    char *prev_t1_line_array;
+#endif /* XDVIPSK */
 
     shift = strlen(glyph_subst) - strlen(glyph_name);
+#ifdef XDVIPSK
+    if (t1_line_ptr - t1_line_array + shift >= t1_line_limit)
+    {
+        prev_t1_line_array = t1_line_array;
+        alloc_array(t1_line, shift + 2, T1_BUF_SIZE);
+        gl_pt += t1_line_array - prev_t1_line_array;
+    }
+#endif /* XDVIPSK */
     if (t1_line_ptr - t1_line_array + shift < t1_line_limit)
     {
         if (shift > 0)
@@ -1065,8 +1076,9 @@ static void t1_putline(void)
     if (t1_line_ptr - t1_line_array <= 1)
         return;
 #ifdef XDVIPSK
-	if ((strncmp(p, "%!", 2) == 0) || (strncmp(p, "%%", 2) == 0))
-		return;
+    p = t1_line_array; /* t1_line_array could be reallocated in rename_t1_line_glyph_name() */
+    if ((strncmp(p, "%!", 2) == 0) || (strncmp(p, "%%", 2) == 0))
+        return;
 #endif /* XDVIPSK */
     if (t1_eexec_encrypt) {
         while (p < t1_line_ptr)

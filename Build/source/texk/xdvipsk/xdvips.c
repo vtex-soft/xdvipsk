@@ -6,7 +6,7 @@
 #else
 #include "xdvips.h" /* The copyright notice in that file is included too! */
 #define VERSION "2024.1"
-#define VTEX_VERSION "2025.07.15"
+#define VTEX_VERSION "2025.10.02"
 #endif /* XDVIPSK */
 #ifdef KPATHSEA
 #include <kpathsea/c-pathch.h>
