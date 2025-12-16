@@ -248,6 +248,14 @@ define_array(t1_line);
 /* define t1_buf_ptr, t1_buf_array & t1_buf_limit */
 typedef char t1_buf_entry;
 define_array(t1_buf);
+#ifdef XDVIPSK
+/* additional buffer for copied and renamed glyphs */
+typedef char t1_add_entry;
+define_array(t1_add);
+/* temporary buffer for t1 line manipulations */
+typedef char t1_wrk_entry;
+define_array(t1_wrk);
+#endif
 
 static int cs_start;
 
@@ -979,28 +987,36 @@ char *glyph_name_cvt(const char *glyph_name, const char *font_name, boolean *p_n
     return (glyph_subst);
 }
 
-static void rename_t1_line_glyph_name(const char *glyph_name, char *gl_pt, const char *glyph_subst)
+static void rename_t1_glyph_name(const char *glyph_name, const char *glyph_subst, char **p_t1_array, char **p_t1_ptr, size_t *p_t1_limit, char *gl_pt)
 {
     char *from_pt, *to_pt, *limit_pt;
     int shift;
-#ifdef XDVIPSK
-    char *prev_t1_line_array;
-#endif /* XDVIPSK */
+    size_t last_gl_pt_index;
+
+    assert(p_t1_array);
+    assert(p_t1_ptr);
+    assert(p_t1_limit);
 
     shift = strlen(glyph_subst) - strlen(glyph_name);
-#ifdef XDVIPSK
-    if (t1_line_ptr - t1_line_array + shift >= t1_line_limit)
+    if (*p_t1_ptr - *p_t1_array + shift + 2 > *p_t1_limit)
     {
-        prev_t1_line_array = t1_line_array;
-        alloc_array(t1_line, shift + 2, T1_BUF_SIZE);
-        gl_pt += t1_line_array - prev_t1_line_array;
+        last_gl_pt_index = gl_pt - *p_t1_array;
+        if (*p_t1_array == t1_line_array)
+        {
+            alloc_array(t1_line, shift + 2, T1_BUF_SIZE);
+        }
+        else
+        {
+            alloc_array(t1_add, shift + 2, T1_BUF_SIZE);
+        }
+        assert(*p_t1_array);
+        gl_pt = *p_t1_array + last_gl_pt_index;
     }
-#endif /* XDVIPSK */
-    if (t1_line_ptr - t1_line_array + shift < t1_line_limit)
+    if (*p_t1_ptr - *p_t1_array + shift + 2 <= *p_t1_limit)
     {
         if (shift > 0)
         {
-            from_pt = t1_line_ptr + 2;
+            from_pt = *p_t1_ptr + 2;
             to_pt = from_pt + shift;
             limit_pt = gl_pt + strlen(glyph_name);
             while (from_pt > limit_pt)
@@ -1010,10 +1026,10 @@ static void rename_t1_line_glyph_name(const char *glyph_name, char *gl_pt, const
         {
             from_pt = gl_pt + strlen(glyph_name);
             to_pt = from_pt + shift;
-            while (from_pt <= t1_line_ptr)
+            while (from_pt <= *p_t1_ptr)
                 *to_pt++ = *from_pt++;
         }
-        t1_line_ptr += shift;
+        *p_t1_ptr += shift;
         memcpy(gl_pt, glyph_subst, strlen(glyph_subst));
     }
     else
@@ -1026,35 +1042,37 @@ static void t1_putline(void)
 {
     char *p = t1_line_array;
 #ifdef XDVIPSK
-    char *gl_pt, *from_pt, *to_pt, *glyph_subst, *pfb_name;
+    char *from_pt, *to_pt, *glyph_subst, *pfb_name;
     char glyph_name[FULL_GLYPH_NAME_LEN + 1];
     const char *font_file = NULL;
-    char *t1_line_array_cpy;
-    int ll = t1_line_ptr - t1_line_array;
+    char *prev_t1_add_ptr;
+    int ll;
 
-    t1_line_array_cpy = malloc(ll + 1);
-    assert(t1_line_array_cpy);
-    memcpy(t1_line_array_cpy, t1_line_array, ll);
-    t1_line_array_cpy[ll] = '\0';
+    ll = t1_line_ptr - t1_line_array;
+    t1_wrk_ptr = t1_wrk_array;
+    alloc_array(t1_wrk, ll + 1, T1_BUF_SIZE);
+    assert(t1_wrk_array);
+    memcpy(t1_wrk_array, t1_line_array, ll);
+    t1_wrk_array[ll] = '\0';
 
     /* /ampersand 208 -| ... */
-    gl_pt = strstr(t1_line_array_cpy, "-|");
-    if (gl_pt)
-        *gl_pt = '\0';
+    t1_wrk_ptr = strstr(t1_wrk_array, " -| ");
+    if (t1_wrk_ptr)
+        *t1_wrk_ptr = '\0';
     /* /minus 30 RD ... */
-    gl_pt = strstr(t1_line_array_cpy, " RD ");
-    if (gl_pt)
-        *gl_pt = '\0';
+    t1_wrk_ptr = strstr(t1_wrk_array, " RD ");
+    if (t1_wrk_ptr)
+        *t1_wrk_ptr = '\0';
 
-    gl_pt = strchr(t1_line_array_cpy, '/');
-    if (gl_pt)
+    t1_wrk_ptr = strchr(t1_wrk_array, '/');
+    if (t1_wrk_ptr)
     {
         if (curfnt && curfnt->resfont && ((font_file = curfnt->resfont->Fontfile) != NULL) && strstr(font_file, PFB_EXT))
         {
             pfb_name = extract_fname(font_file, NULL);
             assert(pfb_name);
-            gl_pt++;
-            from_pt = gl_pt;
+            t1_wrk_ptr++;
+            from_pt = t1_wrk_ptr;
             to_pt = glyph_name;
             while (*from_pt && (*from_pt != ' ') && (to_pt < glyph_name + FULL_GLYPH_NAME_LEN))
                 *to_pt++ = *from_pt++;
@@ -1062,15 +1080,41 @@ static void t1_putline(void)
             glyph_subst = glyph_name_cvt(glyph_name, pfb_name, NULL);
             if (glyph_subst)
             {
-                rename_t1_line_glyph_name(glyph_name, t1_line_array + (gl_pt - t1_line_array_cpy), glyph_subst);
+                if (strncmp(t1_line_array, "dup ", 4) == 0) /* strlen("dup ") */
+                {
+                    /*  Encodings are renamed directly to the file, for example, in the file t1xttsc.pfb (t1xttsc.pfa)
+                            dup 102 /f put
+                        renamed to
+                            dup 102 /uA730 put */
+                    rename_t1_glyph_name(glyph_name, glyph_subst, &t1_line_array, &t1_line_ptr, &t1_line_limit, t1_line_array + (t1_wrk_ptr - t1_wrk_array));
+                }
+                else
+                {
+                    /*  Glyph definition records like
+                            /fi 17 RD <CharString encoded binary bytes> ND
+                        (t1xttsc.pfa, for example) should be preserved with their intact names for
+                        possible references through the PostScript glyph definition command seac,
+                        for example, like in the t1xttsc.pfb (decoded t1xttsc.pfa)
+                            /fi {
+                                66 1050 hsbw
+                                89 548 0 102 105 seac
+                                endchar
+                            } ND
+                        102 and 105 are indices of /f and /i respectively.
+                        Renamed glyph definitions are collected into the t1_add_array for the postponed
+                        output at the end of the glyph definition section. */
+                    alloc_array(t1_add, t1_line_ptr - t1_line_array, T1_BUF_SIZE);
+                    assert(t1_add_array);
+                    memcpy(t1_add_ptr, t1_line_array, t1_line_ptr - t1_line_array);
+                    prev_t1_add_ptr = t1_add_ptr;
+                    t1_add_ptr += t1_line_ptr - t1_line_array;
+                    rename_t1_glyph_name(glyph_name, glyph_subst, &t1_add_array, &t1_add_ptr, &t1_add_limit, prev_t1_add_ptr + (t1_wrk_ptr - t1_wrk_array));
+                }
                 free(glyph_subst);
             }
             free(pfb_name);
         }
     }
-
-    free(t1_line_array_cpy);
-    t1_line_array_cpy = NULL;
 
 #endif /* XDVIPSK */
     if (t1_line_ptr - t1_line_array <= 1)
@@ -2356,6 +2400,24 @@ static void t1_flush_cs(boolean is_subr)
         if (ptr->name != notdef)
             xfree(ptr->name);
     }
+#ifdef XDVIPSK
+    if (t1_add_array)
+    {
+        p = t1_add_array;
+        if (t1_eexec_encrypt)
+        {
+            while (p < t1_add_ptr)
+                t1_outhex(eencrypt(*p++)); /* dvips outputs hex, unlike pdftex */
+        }
+        else
+        {
+            while (p < t1_add_ptr)
+                t1_putchar(*p++);
+        }
+        free(t1_add_array);
+        t1_add_array = NULL;
+    }
+#endif
     sprintf(t1_line_array, "%s", line_end);
     t1_line_ptr = eol(t1_line_array);
     t1_putline();
