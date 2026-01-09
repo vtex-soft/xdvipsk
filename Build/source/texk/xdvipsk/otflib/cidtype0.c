@@ -35,6 +35,9 @@
 #include "mem.h"
 #include "error.h"
 
+#include "xdvips.h"
+#include "protos.h"
+
 #include "cff_types.h"
 #include "cff_limits.h"
 #include "cff.h"
@@ -170,7 +173,7 @@ static void dump_index(card8 *binary,long *offset,int size,int val) {
 }
 
 static long 
-gencidbinarydata(cff_font *cffont, char *used_chars, 
+gencidbinarydata(cff_font *cffont, const UsedMapElem *used_chars,
 				 UT_array *t1_glyphs, UT_array *t1_subrs,
 				 struct cidbytes *cidbytes, card8 **bindata) 
 {
@@ -232,7 +235,7 @@ gencidbinarydata(cff_font *cffont, char *used_chars,
 	bin_offset = 0;
 	gid = 0;
     for ( i=0; i<cidbytes->cidcnt; ++i ) {
-		if (is_used_char2(used_chars, i)) {
+		if (IS_USED_CHAR(used_chars, i)) {
 			dump_index(binary,&bin_offset,cidbytes->fdbytes,0);
 			dump_index(binary,&bin_offset,cidbytes->gdbytes,offset);
 			p = (cs_type1subr *)utarray_eltptr(t1_glyphs,gid);
@@ -286,7 +289,7 @@ gencidbinarydata(cff_font *cffont, char *used_chars,
 }
 
 long
-CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_glyphs,
+CIDFont_type0_dofont (const char *PSName, cff_font *cffont, UsedMapElem *used_glyphs,
 					  struct cidbytes *cidbytes, card8 **bindata)
 {
   cff_index    *idx;
@@ -299,7 +302,6 @@ CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_gly
   long cid;
   card16 cs_count, last_cid = 0;
   int    fd, prev_fd;
-  char  *used_chars;
   unsigned char *CIDToGIDMap = NULL;
   long cid_count;
   UT_array    *t1_charstrings, *t1_subrs;
@@ -307,8 +309,6 @@ CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_gly
   double default_width, nominal_width;
 
   ASSERT(cffont);
-
-  used_chars = (char *)used_glyphs;
 
   cff_read_charsets(cffont);
 
@@ -320,13 +320,13 @@ CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_gly
 
   CIDToGIDMap = NEW(2 * cid_count, unsigned char);
   memset(CIDToGIDMap, 0, 2 * cid_count);
-  add_to_used_chars2(used_chars, 0); /* .notdef */
+  ADD_TO_USED_CHARS(used_glyphs, 0); /* .notdef */
   for (cid = 0; cid <= CID_MAX; cid++) {
-    if (is_used_char2(used_chars, cid)) {
+    if (IS_USED_CHAR(used_glyphs, cid)) {
       gid = cff_charsets_lookup(cffont, (card16)cid);
       if (cid != 0 && gid == 0) {
 //        WARN("Glyph for CID %u missing in font \"%s\".", (CID) cid, PSName);
-        used_chars[cid/8] &= ~(1 << (7 - (cid % 8)));
+        REMOVE_FROM_USED_CHARS(used_glyphs, cid);
         continue;
       }
       CIDToGIDMap[2*cid]   = (gid >> 8) & 0xff;
@@ -382,7 +382,7 @@ CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_gly
   for (cid = 0; cid <= last_cid; cid++) {
     unsigned short gid_org;
 
-    if (!is_used_char2(used_chars, cid))
+    if (!IS_USED_CHAR(used_glyphs, cid))
       continue;
 
     gid_org = (CIDToGIDMap[2*cid] << 8)|(CIDToGIDMap[2*cid+1]);
@@ -449,7 +449,7 @@ CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_gly
     }
   }
 
-  max_len = gencidbinarydata(cffont, used_chars, t1_charstrings, t1_subrs, cidbytes, bindata);
+  max_len = gencidbinarydata(cffont, used_glyphs, t1_charstrings, t1_subrs, cidbytes, bindata);
 
   for(p=(cs_type1subr *)utarray_front(t1_charstrings); p!=NULL; p=(cs_type1subr *)utarray_next(t1_charstrings,p)) {
 	if ( p->data )
@@ -467,7 +467,7 @@ CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_gly
 }
 
 long
-CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_glyphs,
+CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, UsedMapElem *used_glyphs,
 						 struct cidbytes *cidbytes, card8 **bindata)
 {
   cff_index *idx;
@@ -476,14 +476,11 @@ CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_
   card8 *data;
   card16 num_glyphs, gid, last_cid;
   long   i, cid;
-  char  *used_chars;
   double default_width, nominal_width;
   UT_array    *t1_charstrings, *t1_subrs;
   cs_type1subr *p;
 
   ASSERT(cffont);
-
-  used_chars = (char *)used_glyphs;
 
   cff_read_private(cffont);
   cff_read_subrs  (cffont);
@@ -500,15 +497,15 @@ CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_
   }
 
   num_glyphs = 0; last_cid = 0;
-  add_to_used_chars2(used_chars, 0); /* .notdef */
-  for (i = 0; i < (cffont->num_glyphs + 7)/8; i++) {
+  ADD_TO_USED_CHARS(used_glyphs, 0); /* .notdef */
+  for (i = 0; i < (cffont->num_glyphs + BITS_PER_USED_ELEM - 1) / BITS_PER_USED_ELEM; i++) {
     int c, j;
 
-    c = used_chars[i];
-    for (j = 7; j >= 0; j--) {
+    c = used_glyphs[i];
+    for (j = BITS_PER_USED_ELEM - 1; j >= 0; j--) {
       if (c & (1 << j)) {
         num_glyphs++;
-        last_cid = (i + 1) * 8 - j - 1;
+        last_cid = (i + 1) * BITS_PER_USED_ELEM - j - 1;
       }
     }
   }
@@ -534,7 +531,7 @@ CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_
     charset->data.glyphs = NEW(num_glyphs-1, s_SID);
 
     for (gid = 0, cid = 0; cid <= last_cid; cid++) {
-      if (is_used_char2(used_chars, cid)) {
+      if (IS_USED_CHAR(used_glyphs, cid)) {
         if (gid > 0)
           charset->data.glyphs[gid-1] = cid;
         gid++;
@@ -589,7 +586,7 @@ CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_
   gid  = 0;
   data = NEW(CS_STR_LEN_MAX, card8);
   for (cid = 0; cid <= last_cid; cid++) {
-    if (!is_used_char2(used_chars, cid))
+    if (!IS_USED_CHAR(used_glyphs, cid))
       continue;
 
     if ((size = (idx->offset)[cid+1] - (idx->offset)[cid])
@@ -637,7 +634,7 @@ CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_
                (double) cff_get_sid(cffont, "Identity"));
   cff_dict_set(cffont->topdict, "ROS", 2, 0.0);
 
-  max_len = gencidbinarydata(cffont, used_chars, t1_charstrings, t1_subrs, cidbytes, bindata);
+  max_len = gencidbinarydata(cffont, used_glyphs, t1_charstrings, t1_subrs, cidbytes, bindata);
 
   for(p=(cs_type1subr *)utarray_front(t1_charstrings); p!=NULL; p=(cs_type1subr *)utarray_next(t1_charstrings,p)) {
 	if ( p->data )

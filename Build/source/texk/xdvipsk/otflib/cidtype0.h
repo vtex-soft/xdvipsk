@@ -43,10 +43,10 @@ struct cidbytes {
 };
 
 
-extern long CIDFont_type0_dofont (const char *PSName, cff_font *cffont, const char *used_glyphs,
+extern long CIDFont_type0_dofont (const char *PSName, cff_font *cffont, UsedMapElem *used_glyphs,
 								  struct cidbytes *cidbytes, card8 **bindata);
 
-extern long CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, const char *used_glyphs,
+extern long CIDFont_type0_t1cdofont (const char *PSName, cff_font *cffont, UsedMapElem *used_glyphs,
 									 struct cidbytes *cidbytes, card8 **bindata);
 
 #endif /* _CIDTYPE0_H_ */

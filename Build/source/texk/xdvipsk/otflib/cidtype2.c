@@ -33,6 +33,9 @@
 #include "mem.h"
 #include "error.h"
 
+#include "xdvips.h"
+#include "protos.h"
+
 /* TrueType */
 #include "sfnt.h"
 #include "tt_aux.h"
@@ -168,9 +171,9 @@ cid_to_code (CMap *cmap, CID cid)
 /* #define NO_GHOSTSCRIPT_BUG 1 */
 
 void
-CIDFont_type2_dofont (const char *PSName, sfnt *sfont, int index, const char *used_glyphs, long *maxcid)
+CIDFont_type2_dofont (const char *PSName, sfnt *sfont, int index, UsedMapElem *used_glyphs, long *maxcid)
 {
-  char    *h_used_chars, *v_used_chars, *used_chars;
+  UsedMapElem *h_used_chars, *v_used_chars, *used_chars;
   struct tt_glyphs *glyphs;
   CMap    *cmap = NULL;
   tt_cmap *ttcmap = NULL;
@@ -217,26 +220,26 @@ CIDFont_type2_dofont (const char *PSName, sfnt *sfont, int index, const char *us
   {
     int        c;
 
-    h_used_chars = (char *)used_glyphs;
+    h_used_chars = used_glyphs;
 
     /*
      * Quick check of max CID.
      */
     c = 0;
-    for (i = 8191; i >= 0; i--) {
+    for (i = USED_CHARS_BUF_SIZE - 1; i >= 0; i--) {
       if (h_used_chars && h_used_chars[i] != 0) {
-	last_cid = i * 8 + 7;
+	last_cid = i * BITS_PER_USED_ELEM + BITS_PER_USED_ELEM - 1;
 	c = h_used_chars[i];
 	break;
       }
       if (v_used_chars && v_used_chars[i] != 0) {
-	last_cid = i * 8 + 7;
+	last_cid = i * BITS_PER_USED_ELEM + BITS_PER_USED_ELEM - 1;
 	c = v_used_chars[i];
 	break;
       }
     }
     if (last_cid > 0) {
-      for (i = 0; i < 8; i++) {
+      for (i = 0; i < BITS_PER_USED_ELEM; i++) {
 	if ((c >> i) & 1)
 	  break;
 	last_cid--;
@@ -268,7 +271,7 @@ CIDFont_type2_dofont (const char *PSName, sfnt *sfont, int index, const char *us
       long           code;
       unsigned short gid;
 
-      if (!is_used_char2(h_used_chars, cid))
+      if (!IS_USED_CHAR(h_used_chars, cid))
 	continue;
 
       if (glyph_ordering) {
@@ -323,14 +326,14 @@ CIDFont_type2_dofont (const char *PSName, sfnt *sfont, int index, const char *us
       long           code;
       unsigned short gid;
 
-      if (!is_used_char2(v_used_chars, cid))
+      if (!IS_USED_CHAR(v_used_chars, cid))
 	continue;
 
       /* There may be conflict of horizontal and vertical glyphs
        * when font is used with /UCS. However, we simply ignore
        * that...
        */
-      if (h_used_chars && is_used_char2(h_used_chars, cid)) {
+      if (h_used_chars && IS_USED_CHAR(h_used_chars, cid)) {
 	continue;
       }
 
@@ -368,7 +371,7 @@ CIDFont_type2_dofont (const char *PSName, sfnt *sfont, int index, const char *us
 #endif /* !NO_GHOSTSCRIPT_BUG */
 
       if (used_chars) /* merge vertical used_chars to horizontal */
-	add_to_used_chars2(used_chars, cid);
+          ADD_TO_USED_CHARS(used_chars, cid);
 
       num_glyphs++;
     }

@@ -847,9 +847,6 @@ sfnt_get_glyphname(struct tt_post_table *post, cff_font *cffont, USHORT gid)
  *
  *  Mapping information stored in cmap_add.
  */
-#ifndef is_used_char2
-#define is_used_char2(b,c) (((b)[(c)/8]) & (1 << (7-((c)%8))))
-#endif
 
 static cff_font *
 prepare_CIDFont_from_sfnt(sfnt* sfont)
@@ -874,13 +871,13 @@ prepare_CIDFont_from_sfnt(sfnt* sfont)
 static USHORT
 add_to_cmap_if_used (CMap *cmap,
                      cff_font *cffont,
-                     char *used_chars,
+                     UsedMapElem *used_chars,
                      USHORT gid,
                      ULONG ch)
 {
   USHORT count = 0;
   USHORT cid = cffont ? cff_charsets_lookup_inverse(cffont, gid) : gid;
-  if (is_used_char2(used_chars, cid)) {
+  if (IS_USED_CHAR(used_chars, cid)) {
     int len;
     unsigned char *p = wbuf + 2;
 
@@ -901,7 +898,7 @@ add_to_cmap_if_used (CMap *cmap,
        * There are problem when two Unicode code is mapped to
        * single glyph...
        */
-      used_chars[cid / 8] &= ~(1 << (7 - (cid % 8)));
+      REMOVE_FROM_USED_CHARS(used_chars, cid);
     }
   }
 
@@ -911,7 +908,7 @@ add_to_cmap_if_used (CMap *cmap,
 static USHORT
 create_ToUnicode_cmap4 (CMap *cmap,
                         struct cmap4 *map,
-                        char *used_chars,
+                        UsedMapElem *used_chars,
                         cff_font *cffont)
 {
   USHORT count = 0, segCount = map->segCountX2 / 2;
@@ -944,7 +941,7 @@ create_ToUnicode_cmap4 (CMap *cmap,
 static USHORT
 create_ToUnicode_cmap12 (CMap *cmap,
                          struct cmap12 *map,
-                         char *used_chars,
+                         UsedMapElem *used_chars,
                          cff_font *cffont)
 {
   ULONG i, ch, count = 0;
@@ -967,7 +964,7 @@ create_ToUnicode_cmap (tt_cmap *ttcmap,
 					   const char *cmap_ext,
 					   CIDSysInfo *csi,
                        CMap *cmap_add,
-                       const char *used_chars,
+                       const UsedMapElem *used_chars,
                        sfnt *sfont,
                        CMap *code_to_cid_cmap,
 					   const char *cmap_path,
@@ -990,17 +987,17 @@ create_ToUnicode_cmap (tt_cmap *ttcmap,
 	  USHORT i;
 	  luamaptype *map, *current;
 	  luacharmap *p;
-	  for (i = 0; i < 8192; i++) {
+	  for (i = 0; i < USED_CHARS_BUF_SIZE; i++) {
 		  int j;
 
 		  if (used_chars[i] == 0)
 			  continue;
 
-		  for (j = 0; j < 8; j++) {
-			  USHORT cid = 8 * i + j;
+		  for (j = 0; j < BITS_PER_USED_ELEM; j++) {
+			  USHORT cid = BITS_PER_USED_ELEM * i + j;
 			  int ch;
 
-			  if (!is_used_char2(used_chars, cid))
+			  if (!IS_USED_CHAR(used_chars, cid))
 				  continue;
 			  ch = cid;
 			  current = NULL;
@@ -1030,17 +1027,17 @@ create_ToUnicode_cmap (tt_cmap *ttcmap,
 	  }
   } else if (code_to_cid_cmap && cffont && is_cidfont) {
     USHORT i;
-    for (i = 0; i < 8192; i++) {
+    for (i = 0; i < USED_CHARS_BUF_SIZE; i++) {
       int j;
 
       if (used_chars[i] == 0)
         continue;
 
-      for (j = 0; j < 8; j++) {
-        USHORT cid = 8 * i + j;
+      for (j = 0; j < BITS_PER_USED_ELEM; j++) {
+        USHORT cid = BITS_PER_USED_ELEM * i + j;
         int ch;
 
-        if (!is_used_char2(used_chars, cid))
+        if (!IS_USED_CHAR(used_chars, cid))
           continue;
 
         ch = CMap_reverse_decode(code_to_cid_cmap, cid);
@@ -1056,8 +1053,8 @@ create_ToUnicode_cmap (tt_cmap *ttcmap,
       }
     }
   } else {
-    char used_chars_copy[8192];
-    memcpy(used_chars_copy, used_chars, 8192);
+    static UsedMapElem used_chars_copy[USED_CHARS_BUF_SIZE];
+    memcpy(used_chars_copy, used_chars, sizeof(used_chars_copy));
 
     /* For create_ToUnicode_cmap{4,12}(), cffont is for GID -> CID lookup,
      * so it is only needed for CID fonts. */
@@ -1102,7 +1099,7 @@ otf_create_ToUnicode_stream (sfnt *sfont,
 							 const char *font_name,
 							 CMap		*code_to_cid_cmap,
 							 CIDSysInfo *csi,
-                             const char *used_chars,
+                             const UsedMapElem *used_chars,
 							 const char *path,
 							 const char *cmap_name,
 							 const char *cmap_ext,

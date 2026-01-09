@@ -49,7 +49,4 @@
 #  define CDECL
 #endif /* WIN32 */
 
-#define add_to_used_chars2(b,c) {(b)[(c)/8] |= (1 << (7-((c)%8)));}
-#define is_used_char2(b,c) (((b)[(c)/8]) & (1 << (7-((c)%8))))
-
 #endif /* _SYSTEM_H_ */

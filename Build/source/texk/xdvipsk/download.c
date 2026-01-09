@@ -592,7 +592,7 @@ downpsfont(charusetype *p, charusetype *all)
         for (; all->fd; all++) {
             if (all->fd->resfont && all->fd->resfont->otftype &&
 					(strcmp(rf->PSname, all->fd->resfont->PSname) == 0)) {
-                for (j = 0; j < 4096; j++)
+                for (j = 0; j < USED_CHARS_BUF_SIZE; j++)
                     p->bitmap[j] |= all->bitmap[j];
                 map = (luacharmap *)mymalloc((integer)sizeof(luacharmap));
                 map->luamap_idx = all->fd->resfont->luamap_idx;

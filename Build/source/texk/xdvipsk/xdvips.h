@@ -295,7 +295,9 @@ typedef struct lua_t {
  *   there's a 1 for each character that was used in a section.
  */
 #ifdef XDVIPSK
-#define USED_CHARS_BUF_SIZE 4096 /* buffer for bits, corresponding to all 16-bit char code values: 0x10000 / sizeof(charusetype::bitmap[0]) / 8 */
+typedef halfword UsedMapElem;
+/* 4096 -- buffer size for a bitmap, enough to keep used glyph flags corresponding to all 0x10000 16-bit char code values */
+#define USED_CHARS_BUF_SIZE (0x10000 / sizeof(UsedMapElem) / 8)
 #endif /* XDVIPSK */
 typedef struct {
    fontdesctype *fd;
@@ -303,7 +305,7 @@ typedef struct {
 #ifndef XDVIPSK
    halfword bitmap[16];
 #else
-   halfword bitmap[USED_CHARS_BUF_SIZE];
+   UsedMapElem bitmap[USED_CHARS_BUF_SIZE];
    luacharmap *map_chain;
 #endif /* XDVIPSK */
 } charusetype;
@@ -446,11 +448,18 @@ struct papsiz {
 #define USE_FCLOSE (802)
 
 #ifdef XDVIPSK
-#define ADD_TO_USED_CHARS2(b,c) {(b)[(c)/8] |= (1 << (7-((c)%8)));}
-/* used glyphs bitmap array for otf fonts is managed in chars */
-#define IS_USED_CHAR2(b,c) (((b)[(c)/8]) & (1 << (7-((c)%8))))
-/* used glyphs bitmap array for type1 fonts is managed in halfwords */
-#define IS_USED_CHAR(b, c) (((b)[(c) / 16]) & (1 << (15 - ((c) % 16))))
+#define BITS_PER_USED_ELEM (sizeof(UsedMapElem) * 8)
+#define ADD_TO_USED_CHARS(b, c) { \
+    int ix = (c) / BITS_PER_USED_ELEM; \
+    if (ix >= USED_CHARS_BUF_SIZE) { PRINTF_PR("\nError: Used chars buffer overflow", ""); } \
+    else (b)[ix] |= (1 << (BITS_PER_USED_ELEM - 1 - ((c) % BITS_PER_USED_ELEM))); \
+    }
+#define REMOVE_FROM_USED_CHARS(b, c) { \
+    int ix = (c) / BITS_PER_USED_ELEM; \
+    if (ix >= USED_CHARS_BUF_SIZE) { PRINTF_PR("\nError: Used chars buffer overflow", ""); } \
+    else (b)[ix] &= ~(1 << (BITS_PER_USED_ELEM - 1 - ((c) % BITS_PER_USED_ELEM))); \
+    }
+#define IS_USED_CHAR(b, c) (((c) / BITS_PER_USED_ELEM < USED_CHARS_BUF_SIZE) ? (((b)[(c) / BITS_PER_USED_ELEM]) & (1 << (BITS_PER_USED_ELEM - 1 - ((c) % BITS_PER_USED_ELEM)))) : TRUE)
 #endif /* XDVIPSK */
 /* output Unicode string on console in windows */
 #if defined(KPATHSEA) && defined(WIN32)

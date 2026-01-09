@@ -115,8 +115,8 @@ static void add_otf_g2u_table(char *ps_name)
     boolean used;
     charusetype_entry *cu_entry;
     int gid;
-    const char *usedchars;
-    static halfword processed_gids[USED_CHARS_BUF_SIZE];
+    const UsedMapElem *usedchars;
+    static UsedMapElem processed_gids[USED_CHARS_BUF_SIZE];
     char empty_str[] = "";
     char *tex_name;
     luamaptype *lmap_ptr = NULL, *lmap_iter, *lmap_tmp;
@@ -135,7 +135,7 @@ static void add_otf_g2u_table(char *ps_name)
         ps_name = "";
     if (cu_head)
     {
-        memset(processed_gids, 0, sizeof(halfword) * USED_CHARS_BUF_SIZE);
+        memset(processed_gids, 0, sizeof(processed_gids));
         cu_entry = cu_head;
         while (cu_entry)
         {
@@ -167,19 +167,17 @@ static void add_otf_g2u_table(char *ps_name)
 
             if (lmap_ptr)
             {
-                assert(USED_CHARS_BUF_SIZE == 0x10000 / sizeof(halfword) / 8); /* sizeof(charusetype::bitmap[0]) */
                 HASH_ITER(hh, lmap_ptr, lmap_iter, lmap_tmp)
                 {
                     gid = lmap_iter->gid;
                     used = FALSE;
                     if (cu_entry->charused_ptr)
                     {
-                        usedchars = (char*)cu_entry->charused_ptr->bitmap;
-                        if (usedchars && (gid < USED_CHARS_BUF_SIZE * sizeof(halfword) * 8) &&
-                            IS_USED_CHAR2(usedchars, gid) && (!IS_USED_CHAR2(processed_gids, gid)))
+                        usedchars = cu_entry->charused_ptr->bitmap;
+                        if (usedchars && IS_USED_CHAR(usedchars, gid) && (!IS_USED_CHAR(processed_gids, gid)))
                         {
                             used = TRUE;
-                            ADD_TO_USED_CHARS2(processed_gids, gid);
+                            ADD_TO_USED_CHARS(processed_gids, gid);
                         }
                     }
                     if (used)
@@ -710,7 +708,7 @@ static ULONG *makeglyphslocation(sfnt *sfont, SHORT indexToLocFormat, halfword n
 }
 
 static void writecidtype2(sfnt *sfont, struct tt_head_table *head, struct tt_hhea_table *hhea,
-                          CIDSysInfo *csi, /* char *usedchars, */ char *ps_name, long maxcid)
+                          CIDSysInfo *csi, /* const UsedMapElem *usedchars, */ char *ps_name, long maxcid)
 {
     char *str;
     long k;
@@ -1030,16 +1028,16 @@ int writecid(charusetype *p)
             hhea = tt_read_hhea_table(sfont);
             assert(hhea);
             if ( cid_partialdownload ) {
-                CIDFont_type2_dofont(rf->PSname,sfont,rf->index,(char *)p->bitmap,&maxcid);
+                CIDFont_type2_dofont(rf->PSname, sfont, rf->index, p->bitmap, &maxcid);
                 head->indexToLocFormat = 1;
             }
             else {
                 for (n = 1; n < num_glyphs; n++)
-                    add_to_used_chars2((char *)p->bitmap, n);
+                    ADD_TO_USED_CHARS(p->bitmap, n);
                 maxcid = num_glyphs - 1;
             }
             CIDFont_type2_checktables(sfont);
-            writecidtype2(sfont, head, hhea, &csi, /* (char *)p->bitmap, */ rf->PSname, maxcid);
+            writecidtype2(sfont, head, hhea, &csi, /* p->bitmap, */ rf->PSname, maxcid);
             RELEASE(head);
             RELEASE(hhea);
         }
@@ -1059,12 +1057,12 @@ int writecid(charusetype *p)
                     ERROR("Could not open CFF font for font %s", rf->Fontfile);
                 if (!cid_partialdownload) {
                     for (n = 1; n < num_glyphs; n++)
-                        add_to_used_chars2((char *)p->bitmap, n);
+                        ADD_TO_USED_CHARS(p->bitmap, n);
                 }
                 if ( cffont->flag & FONTTYPE_CIDFONT )
-                    buf_size = CIDFont_type0_dofont(rf->PSname,cffont,(char *)p->bitmap,&cdb,&buffer);
+                    buf_size = CIDFont_type0_dofont(rf->PSname, cffont, p->bitmap, &cdb, &buffer);
                 else
-                    buf_size = CIDFont_type0_t1cdofont(rf->PSname,cffont,(char *)p->bitmap,&cdb,&buffer);
+                    buf_size = CIDFont_type0_t1cdofont(rf->PSname, cffont, p->bitmap, &cdb, &buffer);
                 writecidtype0(cffont, head, &csi, &cdb, buffer, buf_size);
                 RELEASE(cdb.fds);
                 RELEASE(buffer);
@@ -1119,7 +1117,7 @@ int writecid(charusetype *p)
         cmap_ext = mymalloc(16);
         strcpy(cmap_ext, "tounicode");
         p->bitmap[0] &= 0xFF7F;
-        otf_create_ToUnicode_stream(sfont,rf->PSname,code_to_cid_cmap,&csi,(char *)p->bitmap,expath,cmap_name,cmap_ext,p->map_chain);
+        otf_create_ToUnicode_stream(sfont, rf->PSname, code_to_cid_cmap, &csi, p->bitmap, expath, cmap_name, cmap_ext, p->map_chain);
         if ( code_to_cid_cmap )
             CMap_release(code_to_cid_cmap);
         index = curfnt->psname;

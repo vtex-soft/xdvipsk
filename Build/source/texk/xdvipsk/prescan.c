@@ -321,15 +321,14 @@ prescanpages(void)
                       cu_entry->charused_ptr = cp;
                   }
 
-                  memset(cp->bitmap, 0, sizeof(halfword) * 4096);
+                  memset(cp->bitmap, 0, sizeof(cp->bitmap));
                   if (f->resfont && f->resfont->otftype) {
-                     char *used_chars = (char *)cp->bitmap;
                      HASH_ITER(hh, f->chardesc_hh, current, tmp) {
                         if (current->charcode == 120601) {
                            int xxx = 0;
                         }
                         if ((current->cid > 0) && (current->flags & PREVPAGE))
-                           ADD_TO_USED_CHARS2(used_chars, current->cid);
+                           ADD_TO_USED_CHARS(cp->bitmap, current->cid);
                      }
                   }
                   else {

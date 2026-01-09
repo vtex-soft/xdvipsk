@@ -26,7 +26,7 @@
 
 #include "sfnt.h"
 
-extern void CIDFont_type2_dofont  (const char *PSName, sfnt *sfont, int index, const char *used_glyphs, long *maxcid);
+extern void CIDFont_type2_dofont  (const char *PSName, sfnt *sfont, int index, UsedMapElem *used_glyphs, long *maxcid);
 
 extern void CIDFont_type2_checktables(sfnt *sfont);
 

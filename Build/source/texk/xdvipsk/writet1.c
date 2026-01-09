@@ -1496,7 +1496,7 @@ static void t1_scan_keys(boolean encoding_only)
     charusetype_entry *cu_head = NULL;
     charusetype_entry *cu_entry;
     char **enc;
-    const halfword *usedchars;
+    const UsedMapElem *usedchars;
     char *pars = NULL;
     char *rest = NULL;
     char *rest_cpy = NULL;
@@ -1568,7 +1568,7 @@ static void t1_scan_keys(boolean encoding_only)
                         {
                             usedchars = NULL;
                             if (cu_entry->charused_ptr)
-                                usedchars = (const halfword*)cu_entry->charused_ptr->bitmap;
+                                usedchars = cu_entry->charused_ptr->bitmap;
                             enc = NULL;
                             if (cu_entry->charused_ptr && cu_entry->charused_ptr->fd && cu_entry->charused_ptr->fd->resfont)
                             {
