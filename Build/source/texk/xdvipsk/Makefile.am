@@ -1,7 +1,7 @@
 ## $Id$
 ### Makefile.am for the TeX Live subdirectory texk/xdvipsk/
 ##
-## Copyright 2015-2024 Karl Berry <tex-live@tug.org>
+## Copyright 2015-2026 Karl Berry <tex-live@tug.org>
 ## Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 ## You may freely use, modify and/or distribute this file.
 ##
@@ -14,8 +14,8 @@ LUA_INCLUDES = $(LUA53_INCLUDES) $(LUA53_DEFINES)
 LUA_LIBS = $(LUA53_LIBS)
 LUA_DEPEND = $(LUA53_DEPEND)
 
-AM_CPPFLAGS = $(KPATHSEA_INCLUDES) -DUNIX -DKPATHSEA -DSHIFTLOWCHARS -DDEBUG
-AM_CFLAGS = $(WARNING_CFLAGS) -D_FORTIFY_SOURCE=1 -DDEBUG
+AM_CPPFLAGS = $(KPATHSEA_INCLUDES) -DUNIX -DKPATHSEA -DSHIFTLOWCHARS
+AM_CFLAGS = $(WARNING_CFLAGS)
 
 if cross
   MINGW_INCLUDES = -I$(abs_top_srcdir)/mingw/include
