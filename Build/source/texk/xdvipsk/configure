@@ -3512,15 +3512,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# Don't do anything if disabled.  The 32-bit Solaris for github doesn't
-# have main in libstdc++ (last check here).  Have to figure out what's
-# going on.
-# https://productionresultssa15.blob.core.windows.net/actions-results/4ba3b577-6e5c-410c-a84a-aab41c3c0937/workflow-job-run-bfb09077-766b-50a7-85e6-c2be65408694/logs/job/job-logs.txt?rsct=text%2Fplain&se=2026-01-22T23%3A00%3A21Z&sig=f9XUBuDhUbo0QWKoo7xRXDBp98JkPYamHHCIyFSVm8g%3D&ske=2026-01-22T23%3A14%3A33Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2026-01-22T22%3A14%3A33Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-11-05&sp=r&spr=https&sr=b&st=2026-01-22T22%3A50%3A16Z&sv=2025-11-05
-if test "x$enable_xdvipsk" != xyes; then
-  echo "$0: xdvipsk disabled, not configuring."
-  exit 0
-fi
-
 # check for C++ compiler and the library compiler
 
 
@@ -20532,12 +20523,6 @@ then :
   printf "%s\n" "#define HAVE_GETCWD 1" >>confdefs.h
 
 fi
-ac_fn_c_check_func "$LINENO" "getwd" "ac_cv_func_getwd"
-if test "x$ac_cv_func_getwd" = xyes
-then :
-  printf "%s\n" "#define HAVE_GETWD 1" >>confdefs.h
-
-fi
 ac_fn_c_check_func "$LINENO" "memcmp" "ac_cv_func_memcmp"
 if test "x$ac_cv_func_memcmp" = xyes
 then :
@@ -23158,8 +23143,53 @@ subdirs="$subdirs "
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sys/wait.h that is POSIX.1 compatible" >&5
+printf %s "checking for sys/wait.h that is POSIX.1 compatible... " >&6; }
+if test ${ac_cv_header_sys_wait_h+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+#include <sys/wait.h>
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(stat_val) ((unsigned int) (stat_val) >> 8)
+#endif
+#ifndef WIFEXITED
+# define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#endif
+
+int
+main (void)
+{
+  int s;
+  wait (&s);
+  s = WIFEXITED (s) ? WEXITSTATUS (s) : 1;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_header_sys_wait_h=yes
+else case e in #(
+  e) ac_cv_header_sys_wait_h=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_sys_wait_h" >&5
+printf "%s\n" "$ac_cv_header_sys_wait_h" >&6; }
+if test $ac_cv_header_sys_wait_h = yes; then
+
+printf "%s\n" "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
+
+fi
+
 # Force Automake to use CXXLD for linking
-nodist_EXTRA_pdftex_SOURCES = dummy.cxx
+nodist_EXTRA_xdvipsk_SOURCES = dummy.cxx
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
