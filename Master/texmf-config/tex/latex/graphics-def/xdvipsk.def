@@ -18,6 +18,7 @@
 %%
 \ProvidesFile{xdvipsk.def}
   [2022/09/22 v3.1e Graphics/color driver for xdvipsk]
+\declare@file@substitution{dvips.def}{xdvipsk.def}
 \def\GPT@space{ }
 \def\c@lor@arg#1{%
   \dimen@#1\p@

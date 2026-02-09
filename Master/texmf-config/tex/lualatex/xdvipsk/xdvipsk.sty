@@ -1,0 +1,31 @@
+%%
+%% This is file `xdvipsk.sty',
+%%
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{xdvipsk}[2026/02/09 v1.0 tex support for xdvipsk (ST)]
+
+\@ifundefined{declare@file@substitution}
+    {\PackageWarningNoLine{xdvipsk}{%
+     To activate `xdvipsk` graphics extensions\MessageBreak
+     you need to load `xdvipsk.def`}
+    }{\declare@file@substitution{dvips.def}{xdvipsk.def}}
+
+\def\xdvipsk@activate@opentype@support{1}
+\DeclareOption{noOpenType}{\def\xdvipsk@activate@opentype@support{0}}
+\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{luafontmaps}}
+\ProcessOptions
+
+\ifcase\xdvipsk@activate@opentype@support
+\else
+    \directlua{%
+        if fonts.constructors.features.otf.defaults.dvifont ~= 'xdvipsk' then
+           print()
+        end
+        }
+    \RequirePackage{luafontmaps}
+    \directlua{luafontmaps.check_dvifont_driver()}
+\fi
+
+\endinput
+%%
+%% End of file `xdvipsk.sty'.
