@@ -1,8 +1,8 @@
 %%
-%% This is file `xdvipsk.sty',
+%% This is file `xdvipsk-support.sty',
 %%
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{xdvipsk}[2026/02/09 v1.0 tex support for xdvipsk (ST)]
+\ProvidesPackage{xdvipsk-support}[2026/02/11 v1.0 tex support for xdvipsk (ST)]
 
 \@ifundefined{declare@file@substitution}
     {\PackageWarningNoLine{xdvipsk}{%
@@ -12,20 +12,15 @@
 
 \def\xdvipsk@activate@opentype@support{1}
 \DeclareOption{noOpenType}{\def\xdvipsk@activate@opentype@support{0}}
-\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{luafontmaps}}
+\DeclareOption*{\PassOptionsToPackage{\CurrentOption}{xdvipskmaps}}
 \ProcessOptions
 
 \ifcase\xdvipsk@activate@opentype@support
 \else
-    \directlua{%
-        if fonts.constructors.features.otf.defaults.dvifont ~= 'xdvipsk' then
-           print()
-        end
-        }
-    \RequirePackage{luafontmaps}
-    \directlua{luafontmaps.check_dvifont_driver()}
+    \RequirePackage{xdvipskmaps}
+    \directlua{xdvipskmaps.check_dvifont_driver()}
 \fi
 
 \endinput
 %%
-%% End of file `xdvipsk.sty'.
+%% End of file `xdvipsk-support.sty'.

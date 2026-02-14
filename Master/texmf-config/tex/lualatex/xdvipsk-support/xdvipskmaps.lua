@@ -1,24 +1,24 @@
 --
---  This is file `luafontmaps.lua',
+--  This is file `xdvipskmaps.lua',
 --
 --  Copyright (C) 2026 by Sigitas Tolusis <sigitas@vtex.lt>
 --
---  This work is under the CC0 license.
+--  This work is under the LPPL Version 1.3c license.
 --
 
-module('luafontmaps', package.seeall)
+module('xdvipskmaps', package.seeall)
 
-luafontmaps.module = {
-    name          = "luafontmaps",
+xdvipskmaps.module = {
+    name          = "xdvipskmaps",
     version       =  1.0,
-    date          = "2026/02/09",
+    date          = "2026/02/11",
     description   = "Lua tex support package.",
     author        = "Sigitas Tolusis",
     copyright     = "Sigitas Tolusis",
-    license       = "CC0",
+    license       = "LPPL Version 1.3c",
 }
 
-luatexbase.provides_module(luafontmaps.module)
+luatexbase.provides_module(xdvipskmaps.module)
 
 local sformat = string.format
 
@@ -28,8 +28,8 @@ config.lualibs.load_extended = false
 
 require "lualibs"
 
-config.luafontmaps = {}
-config.luafontmaps.debug = false
+config.xdvipskmaps = {}
+config.xdvipskmaps.debug = false
 
 local vtx_fonts_info = vtx_fonts_info or { }
 vtx_fonts_info.otf_fonts = vtx_fonts_info.otf_fonts or { }
@@ -40,7 +40,7 @@ local dvifont_driver = fonts.constructors.features.otf.defaults.dvifont
 
 local dvifont_driver_info = "The `luaotfload` package is loaded with dvifont driver" ..
 dvifont_driver .. ". " ..
-[[To use `xdvipsk` with OpenType fonts, use another `luaotfload` configuration:
+[[Use another `luaotfload` configuration to use `xdvipsk` with OpenType fonts:
 
 luaotfload.conf
 ---------------
@@ -53,7 +53,7 @@ Trying to change driver on fly. No guarantee to be okay!
 
 function check_dvifont_driver()
    if dvifont_driver ~= 'xdvipsk' then
-      luatexbase.module_warning('luafontmaps', dvifont_driver_info)
+      luatexbase.module_warning('xdvipskmaps', dvifont_driver_info)
       fonts.constructors.features.otf.defaults.dvifont = 'xdvipsk'
       if luatexbase.in_callback('pre_shipout_filter', 'luaotfload.dvi') then
          luatexbase.remove_from_callback('pre_shipout_filter', 'luaotfload.dvi')
@@ -80,7 +80,7 @@ function get_utf16(val)
 end
 
 function createfontsmap()
-   local options = config.luafontmaps
+   local options = config.xdvipskmaps
    local selfautoparent = kpse.expand_var('$SELFAUTOPARENT')
    local selfautograndparent = kpse.expand_var('$SELFAUTOGRANDPARENT')
    for i,v in table.sortedhash(fonts.hashes.identifiers) do
@@ -118,6 +118,9 @@ function createfontsmap()
          lfs.mkdir(output_dir)
       end
       local fd = io.open(output_dir .. "/" .. tex.jobname .. '.opentype.map', 'w')
+      if fd == nil then
+         luatexbase.module_error('xdvipskmaps', "Enable —shell-escape to create a catalog in the output directory.!")
+      end
       for key,value in table.sortedhash(vtx_fonts_info.otf_fonts) do
          fd:write(value .. "\n")
       end
@@ -137,8 +140,8 @@ function buildpage_filter_callback(extrainfo)
       if fonts then
          createfontsmap()
       end
-      if luafontmaps.fd then
-         luafontmaps.fd:close()
+      if xdvipskmaps.fd then
+         xdvipskmaps.fd:close()
       end
    end
 end
@@ -150,7 +153,7 @@ font_definition = function(f, n)
       n = node.new(node.id('whatsit'), node.subtype("special"))
       n.data = "mapline: " .. mapline
       --
-      if luafontmaps.extra_maps then
+      if xdvipskmaps.extra_maps then
          local tfmname = fonts.hashes.identifiers[f]
          if vtx_fonts_info.otf_fonts[tfmname] == nil then
             vtx_fonts_info.otf_fonts[tfmname] = mapline_old
@@ -177,7 +180,7 @@ format_mapline = function(f)
       subfont = ((subfont and "(" .. tostring(subfont) .. ")") or "")
       mapline = tfmname .. ' ' .. ' ' .. psname .. ' "' .. fontname .. '" >' .. filename .. subfont
       --
-      if luafontmaps.extra_maps then
+      if xdvipskmaps.extra_maps then
          mapline_old = tfmname .. '\t' .. '\t' .. psname .. '\t' .. fontname .. '\t>' .. filename .. subfont
       end
       --
@@ -191,10 +194,10 @@ place_glyph = function(parent_box, f, font_encoding, c, gid, uni, dvi_pointer, h
    -- "dddddSddd->NN", parent_box, f, font_encoding, c, char_index(f, c), uni, dvi_pointer, dvi.h, dvi.v
    local fnt = fonts.hashes.identifiers[f]
    if font_encoding == 2 then
-      if luafontmaps.place_glyphs then
-         luafontmaps.fd:write(table.concat({tex.count[0], fnt.name, gid, (uni or ''), h, v, dvi_pointer}, ',')..'\n')
+      if xdvipskmaps.place_glyphs then
+         xdvipskmaps.fd:write(table.concat({tex.count[0], fnt.name, gid, (uni or ''), h, v, dvi_pointer}, ',')..'\n')
       end
-      if luafontmaps.extra_maps then
+      if xdvipskmaps.extra_maps then
          local fontname = fnt.fullname:gsub('[<>:"/\\|%?%*]', '@')
          vtx_fonts_info.encodings[fontname] = vtx_fonts_info.encodings[fontname] or { }
          if vtx_fonts_info.encodings[fontname][c] == nil then
@@ -203,8 +206,8 @@ place_glyph = function(parent_box, f, font_encoding, c, gid, uni, dvi_pointer, h
          end
       end
    else
-      if luafontmaps.place_glyphs then
-         luafontmaps.fd:write(table.concat({tex.count[0], fnt.name, c, (uni or ''), h, v, dvi_pointer},',')..'\n')
+      if xdvipskmaps.place_glyphs then
+         xdvipskmaps.fd:write(table.concat({tex.count[0], fnt.name, c, (uni or ''), h, v, dvi_pointer},',')..'\n')
       end
    end
    return nil,nil
@@ -212,11 +215,11 @@ end
 
 function place_glyph_end(extrainfo)
    if extrainfo == "end" then
-      if luafontmaps.fd then
-         luafontmaps.fd:close()
+      if xdvipskmaps.fd then
+         xdvipskmaps.fd:close()
       end
-      if luafontmaps.extra_maps and next(vtx_fonts_info.otf_fonts, nil) then
-         local output_dir = config.luafontmaps.output_dir or ".xdvipsk"
+      if xdvipskmaps.extra_maps and next(vtx_fonts_info.otf_fonts, nil) then
+         local output_dir = config.xdvipskmaps.output_dir or ".xdvipsk"
          if not lfs.isdir(output_dir) then
             lfs.mkdir(output_dir)
          end
@@ -237,4 +240,4 @@ function place_glyph_end(extrainfo)
 end
 
 --
--- End of file `luafontmaps.lua'.
+-- End of file `xdvipskmaps.lua'.

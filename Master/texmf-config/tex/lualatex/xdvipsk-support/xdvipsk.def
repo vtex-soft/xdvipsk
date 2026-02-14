@@ -1,3 +1,8 @@
+%% xdvipsk.def Copyright (C) 2026 Sigitas Tolušis
+%%
+%% This work is an exchanged version of dvips.def with
+%% bitmap graphics support.
+%%
 %% dvips.def Copyright (C) 1994      David Carlisle Sebastian Rahtz
 %%           Copyright (C) 1995-1999 David Carlisle
 %%           Copyright (C) 2000-2022 David Carlisle, LaTeX3 Project
@@ -12,12 +17,10 @@
 %%
 %% This work has the LPPL maintenance status `maintained'.
 %%
-%% The Current Maintainer of this work is the LaTeX3 Project.
-%%
-%% https://github.com/latex3/graphics-def/issues
+%% The Current Maintainer of this work is Sigitas Tolušis.
 %%
 \ProvidesFile{xdvipsk.def}
-  [2022/09/22 v3.1e Graphics/color driver for xdvipsk]
+  [2022/09/22 v3.1e Graphics/color driver for xdvipsk (ST)]
 \declare@file@substitution{dvips.def}{xdvipsk.def}
 \def\GPT@space{ }
 \def\c@lor@arg#1{%
