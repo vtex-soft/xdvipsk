@@ -1,6 +1,6 @@
 # Overview
 
-## *xdvipsk*: extended dvips (`TeXLive 2025`)
+## *xdvipsk*: extended dvips (`TeXLive 2026`)
 
 It has a few base extensions:
 * one allows flexible inclusion of bitmap images
@@ -265,17 +265,17 @@ applying following modifications to the glyph name until proper unicode value no
 
 For correct work of `xdvipsk`, a number of files should be prepared.
 
-`texcid.pro`
+`xdvipsk-cid.pro`
 
 > `PostScript` header file used for inclusion of
 > `OpenType` fonts in `PostScript` files.  It is an analogue of
 > `texps.pro` that is used in case of `Type 1` fonts.
 
-`luafonts.sty` 
+`xdvipsk-support.sty` 
 
-> A `LaTeX` package, which is just an interface
+> A `LuaLaTeX` package, which is just an interface
 > to `Lua` code generating two maps necessary for `xdvipsk`.
-> It is loaded like any other `\LaTeX` package: `\usepackage{luafonts}`
+> It is loaded like any other `\LaTeX` package: `\usepackage{xdvipsk-support}`
 
 To get the general picture, how process is organized, let us present the description of workflow involving the use of `xdvipsk`.
 
@@ -283,14 +283,16 @@ To get the general picture, how process is organized, let us present the descrip
 #### Running `xdvipsk`
 
 1. Run `dvilualatex *article*.tex` where file
-  `*article*.tex` includes the line `\usepackage{luafonts}`
+  `*article*.tex` includes the line `\usepackage{xdvipsk-support}`
 
     - Input:
 
         ```
             *article*.tex
-            tex/luatex/luafonts/luafonts.sty
-            tex/luatex/luafonts/luafonts.lua
+            tex/lualatex/xdvipsk-support/xdvipsk-support
+            tex/lualatex/xdvipsk-support/xdvipskmaps.sty
+            tex/lualatex/xdvipsk-support/xdvipskmaps.lua
+            tex/lualatex/xdvipsk-support/xdvipsk.def
             ...
         ```
 
@@ -312,7 +314,7 @@ To get the general picture, how process is organized, let us present the descrip
             .xdvipsk/*psname*.encodings.map
             ...
             .xdvipsk/*article*.opentype.map
-            texmf-dist/dvips/base/texcid.pro
+            texmf-dist/dvips/xdvipsk/xdvipsk-cid.pro
             ...
         ```
 
@@ -447,7 +449,7 @@ It consists of five columns
 For encoding of `OpenType` fonts same dictionaries `GlyphNames2Unicode` of the font description sections in the `PostScript` file could be used.  
 Instead of glyph names glyph indices `GID`s are used in `OpenType` fonts case:
 
-    ```
+```
     /GlyphNames2Unicode <<
       5 <0041>
       6 <0042>
@@ -469,7 +471,7 @@ Instead of glyph names glyph indices `GID`s are used in `OpenType` fonts case:
       26 <0056>
       29 <0059>
       >> def
-    ```
+```
 
 In contrast to `Type 1` fonts, `GlyphNames2Unicode` dictionaries for `OpenType` fonts are formed not from external or internal glyph name to unicode tables. Unicode maps `.xdvipsk/*.encodings.map` and `.otf` encodings are used instead.
 
@@ -578,4 +580,4 @@ or command `luascript` in `xdvipsk` config files.
 `TeXLive` build environment is used to build executables for these architectures *Linux*, *macOS* and *Windows*.  
 `Windows` binaries are cross compiled with `mingw`.
 
-The current `xdvipsk` version is based on `dvips 2024.1`, `web2c + kpathsea 6.4.0/dev`, `TeXLive 2025/dev`.
+The current `xdvipsk` version is based on `dvips 2026.1`, `web2c + kpathsea 6.4.2/dev`, `TeXLive 2026`.
