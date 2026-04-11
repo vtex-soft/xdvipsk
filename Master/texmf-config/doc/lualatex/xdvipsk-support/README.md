@@ -37,8 +37,14 @@ https://github.com/vtex-soft/xdvipsk.git
 \documentclass{...}
 ```
 
-Option `noOpenType` disables OpenType font support.
+## options
 
+- `noOpenType` -- disables OpenType font support;
+- `otfchar` -- uses tex native charcodes for OpenType fonts
+   (creates extra .xdvisk catalog, requires --shell-escape);
+- `otfgid` -- uses gid encoding for OpenType fonts (supported by `LuaTeX` from Version 1.25.6).
+
+Default option `otfgid` with fallback to `otfchar` for unsupported `LuaTeX` version.
 
 ## luaotfload configuration (luaotfload.conf)
 
@@ -52,7 +58,7 @@ Use this `luaotfload` configuration for proper use of `xdvipsk` with OpenType fo
 ## --shell-escape
 
 Enable creating a `.xdvipsk` catalog in the output directory.  
-It’s used in OpenType font management.
+It’s used in OpenType font management with `otfchar` option.
 
 ## bitmap inclusion
 
@@ -98,4 +104,4 @@ Bitmap image file names are included in `DVI` files inside arguments of
 It’s the first steps. More information will be provided later.
 
 -------------------
-v1.0 2026-02-11 (ST)
+v1.1 2026-04-10 (ST)

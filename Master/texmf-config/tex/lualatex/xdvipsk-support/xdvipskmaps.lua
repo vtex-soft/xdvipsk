@@ -10,8 +10,8 @@ module('xdvipskmaps', package.seeall)
 
 xdvipskmaps.module = {
     name          = "xdvipskmaps",
-    version       =  1.0,
-    date          = "2026/02/11",
+    version       =  1.1,
+    date          = "2026/04/10",
     description   = "Lua tex support package.",
     author        = "Sigitas Tolusis",
     copyright     = "Sigitas Tolusis",
@@ -29,7 +29,6 @@ config.lualibs.load_extended = false
 require "lualibs"
 
 config.xdvipskmaps = {}
-config.xdvipskmaps.debug = false
 
 local vtx_fonts_info = vtx_fonts_info or { }
 vtx_fonts_info.otf_fonts = vtx_fonts_info.otf_fonts or { }
@@ -140,33 +139,20 @@ function buildpage_filter_callback(extrainfo)
       if fonts then
          createfontsmap()
       end
-      if xdvipskmaps.fd then
-         xdvipskmaps.fd:close()
-      end
    end
 end
 
-font_definition = function(f, n)
-   -- "d->N", f, &font_definition
-   local mapline, mapline_old = format_mapline(f)
-   if mapline ~= nil then
-      n = node.new(node.id('whatsit'), node.subtype("special"))
-      n.data = "mapline: " .. mapline
-      --
-      if xdvipskmaps.extra_maps then
-         local tfmname = fonts.hashes.identifiers[f]
-         if vtx_fonts_info.otf_fonts[tfmname] == nil then
-            vtx_fonts_info.otf_fonts[tfmname] = mapline_old
-         end
-      end
-      --
+dvi_output = function(p, f)
+   -- "dd->R", p, f, &result
+   local result = nil
+   if (p == 1) then
+      result = format_mapline(f)
    end
-   return n
+   return result
 end
 
 format_mapline = function(f)
    local mapline = nil
-   local mapline_old = nil
    local selfautoparent = kpse.expand_var('$SELFAUTOPARENT')
    local selfautograndparent = kpse.expand_var('$SELFAUTOGRANDPARENT')
    local v = fonts.hashes.identifiers[f]
@@ -178,65 +164,11 @@ format_mapline = function(f)
       local psname = v.psname:gsub( "%s$", "")
       local subfont = v.shared and v.shared.rawdata and v.shared.rawdata.subfont
       subfont = ((subfont and "(" .. tostring(subfont) .. ")") or "")
-      mapline = tfmname .. ' ' .. ' ' .. psname .. ' "' .. fontname .. '" >' .. filename .. subfont
-      --
-      if xdvipskmaps.extra_maps then
-         mapline_old = tfmname .. '\t' .. '\t' .. psname .. '\t' .. fontname .. '\t>' .. filename .. subfont
-      end
-      --
+      mapline = 'mapline: ' .. tfmname .. ' ' .. ' ' .. psname .. ' "' .. fontname .. '" >' .. filename .. subfont
    else
       -- type1 font
    end
-   return mapline, mapline_old
-end
-
-place_glyph = function(parent_box, f, font_encoding, c, gid, uni, dvi_pointer, h, v)
-   -- "dddddSddd->NN", parent_box, f, font_encoding, c, char_index(f, c), uni, dvi_pointer, dvi.h, dvi.v
-   local fnt = fonts.hashes.identifiers[f]
-   if font_encoding == 2 then
-      if xdvipskmaps.place_glyphs then
-         xdvipskmaps.fd:write(table.concat({tex.count[0], fnt.name, gid, (uni or ''), h, v, dvi_pointer}, ',')..'\n')
-      end
-      if xdvipskmaps.extra_maps then
-         local fontname = fnt.fullname:gsub('[<>:"/\\|%?%*]', '@')
-         vtx_fonts_info.encodings[fontname] = vtx_fonts_info.encodings[fontname] or { }
-         if vtx_fonts_info.encodings[fontname][c] == nil then
-            local value = fnt["characters"][c]
-            vtx_fonts_info.encodings[fontname][c] = sformat("%s,%s,%s,%s,%s", c, gid, get_utf16(uni), value.width, value.height)
-         end
-      end
-   else
-      if xdvipskmaps.place_glyphs then
-         xdvipskmaps.fd:write(table.concat({tex.count[0], fnt.name, c, (uni or ''), h, v, dvi_pointer},',')..'\n')
-      end
-   end
-   return nil,nil
-end
-
-function place_glyph_end(extrainfo)
-   if extrainfo == "end" then
-      if xdvipskmaps.fd then
-         xdvipskmaps.fd:close()
-      end
-      if xdvipskmaps.extra_maps and next(vtx_fonts_info.otf_fonts, nil) then
-         local output_dir = config.xdvipskmaps.output_dir or ".xdvipsk"
-         if not lfs.isdir(output_dir) then
-            lfs.mkdir(output_dir)
-         end
-         local fd = io.open(output_dir .. "/" .. tex.jobname .. '.opentype.map', 'w')
-         for key,value in table.sortedhash(vtx_fonts_info.otf_fonts) do
-            fd:write(value .. "\n")
-         end
-         fd:close()
-         for key,value in table.sortedhash(vtx_fonts_info.encodings) do
-            local fd = io.open(sformat("%s/%s.encodings.map", output_dir, key), 'w')
-            for k,v in table.sortedhash(value) do
-               fd:write(v .. "\n")
-            end
-            fd:close()
-         end
-      end
-   end
+   return mapline
 end
 
 --

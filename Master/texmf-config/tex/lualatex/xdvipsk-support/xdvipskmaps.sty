@@ -1,35 +1,20 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{xdvipskmaps}[2026/02/11 v1.0 luatex opentype map (ST)]
+\ProvidesPackage{xdvipskmaps}[2026/04/10 v1.1 luatex opentype map (ST)]
 
-\newif\if@lua@fonts@debug
-\DeclareOption{debug}{\global\@lua@fonts@debugtrue}
-\chardef\otf@dvi@code=0
+\chardef\otf@dvi@code=1
 \DeclareOption{otfchar}{\global\chardef\otf@dvi@code=0}
 \DeclareOption{otfgid}{\global\chardef\otf@dvi@code=1}
-\DeclareOption{otfgidx}{\global\chardef\otf@dvi@code=2}
-\chardef\place@glyph@on=0
-\DeclareOption{chars}{\global\chardef\place@glyph@on=1}
 \ProcessOptions
 
 \RequirePackage{luatexbase}
 \RequireLuaModule{xdvipskmaps}
 
-\if@lua@fonts@debug
-    \directlua{config.xdvipskmaps.debug=true}
-\fi
-
 \directlua{%
-    xdvipskmaps.extra_maps = (tonumber('\number\otf@dvi@code') == 1);
-    xdvipskmaps.place_glyphs = (tonumber('\number\place@glyph@on') > 0);
-    local standard_luatex = callback.list()['font_definition'] == nil
+    local standard_luatex = callback.list()['dvi_output'] == nil
     if standard_luatex then
        if tonumber('\number\otf@dvi@code') > 0 then
-          luatexbase.module_warning('xdvipskmaps', "Only the `otfchar` option is available in standard `LuaTeX`!")
+          luatexbase.module_warning('xdvipskmaps', "Only the `otfchar` option is available in current `LuaTeX` version!")
           token.set_char("otf@dvi@code", 0, "global")
-       end
-       if xdvipskmaps.place_glyphs then
-          luatexbase.module_warning('xdvipskmaps', "The `chars` option is not available in standard `LuaTeX`!")
-          xdvipskmaps.place_glyphs = false
        end
     end     
     }
@@ -38,38 +23,23 @@
     \directlua{%
         xdvipskmaps.otfgid=false;
         luatexbase.add_to_callback('buildpage_filter', xdvipskmaps.buildpage_filter_callback, 'xdvipskmaps buildpage filter')%
-        if xdvipskmaps.place_glyphs then
-            %% Doesn’t work with the standard LuaTeX engine!
-            luatexbase.callbacktypes['place_glyph'] = 1
-            luatexbase.add_to_callback('place_glyph', xdvipskmaps.place_glyph, 'place_glyph')
-            xdvipskmaps.fd = io.open(tex.jobname .. '.chars.csv', 'w')
-        end
         }%
 \else\relax %% \relax just in case
-    %% Doesn’t work with the standard LuaTeX engine!
+    %% Works with the standard LuaTeX engine from Version 1.25.6!
     \directlua{%
         xdvipskmaps.otfgid=true;
         %% mapline DVI special sample in DVI for OpenType fonts
         %% xxx [lmroman10-regular]:+tlig;  LMRoman10-Regular "LMRoman10-Regular" >$SELFAUTOPARENT/texmf-dist/fonts/opentype/public/lm/lmroman10-regular.otf
-        luatexbase.callbacktypes['font_definition'] = 1
-        luatexbase.add_to_callback('font_definition', xdvipskmaps.font_definition, 'xdvipskmaps_font_definition')
+        luatexbase.callbacktypes['dvi_output'] = 1
+        luatexbase.add_to_callback('dvi_output', xdvipskmaps.dvi_output, 'xdvipskmaps_dvi_output')
         %% switch to using GID encoding in DVI
+        %% DVI special to set GID encoding flag for xdvipsk
+        %% xxx vtex:settings.xdvipsk.opentype={enc=gid}
         if pdf.setdviencoding ~= nil then
            pdf.setdviencoding(1)
         else
-           %% DVI special to set GID encoding flag for xdvipsk
-           %% xxx vtex:settings.xdvipsk.opentype={enc=gid}
-           luatexbase.callbacktypes['after_dvi_header'] = 1
-           luatexbase.add_to_callback('after_dvi_header', function(...) return 1 end, 'after_dvi_header')
+           luatexbase.module_warning('xdvipskmaps', "`GID` encoding not available in current `LuaTeX` version!")
         end
-        %% get information about glyphs in DVI
-        if xdvipskmaps.place_glyphs then
-           luatexbase.callbacktypes['place_glyph'] = 1
-           luatexbase.add_to_callback('place_glyph', xdvipskmaps.place_glyph, 'place_glyph')
-           local fname = tex.jobname .. '.chars.csv'
-           xdvipskmaps.fd = io.open(fname, 'w')
-        end
-        luatexbase.add_to_callback('buildpage_filter', xdvipskmaps.place_glyph_end, 'buildpage_filter_place_glyph')%
         }%
 \fi
 %% set OpenType font marker in DVI file
