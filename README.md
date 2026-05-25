@@ -29,7 +29,6 @@ More info:
 
 - [Overview](README.overview.md)
 - [Usage](README.usage.md)
-- [DeveloperNotes](README.developing.md)
 - [Building](README.building.md)
 
 It is successor and minimized version of:

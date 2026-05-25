@@ -117,9 +117,10 @@ The dictionary is stored in the `FontInfo` dictionary under the key `GlyphNames2
 To add `GlyphNames2Unicode` dictionary `xdvipsk` uses these sources:
 
 - compiled in executable `Lua` table (`Build/source/texk/xdvipsk/glyphlist_table.lua`,  
-  inherited and supplemented from the standard `Adobe` glyph list  
-  `https://github.com/adobe-type-tools/agl-aglfn/blob/master/glyphlist.txt`)  
-   and other lists from `TeXLive` distribution;
+  covering the standard `Adobe` glyph list (`AGLv2`,  
+  `https://github.com/adobe-type-tools/agl-aglfn/blob/master/glyphlist.txt`),  
+  other lists from `TeXLive` distribution, and glyph sets from `newtx`/`newpx` (`ntx`)  
+  and `luaotf` packages);
 
 - from `kpse_cmap_format` available file: `<fontfilename>.g2u` (formated as `PostScript` dictionary);  
 
@@ -577,7 +578,7 @@ or command `luascript` in `xdvipsk` config files.
     libtiff - version 4.7.0
  ```
 
-`TeXLive` build environment is used to build executables for these architectures *Linux*, *macOS* and *Windows*.  
-`Windows` binaries are cross compiled with `mingw`.
+`TeXLive` build environment is used to build executables for *macOS* (arm64) and *Windows* (x86-64, cross-compiled with `mingw-w64`).  
+*Linux* (x86-64) binaries are built inside a Docker container (Ubuntu 24.04).
 
-The current `xdvipsk` version is based on `dvips 2026.1`, `web2c + kpathsea 6.4.2/dev`, `TeXLive 2026`.
+The current `xdvipsk` version is based on `dvips 2026.1`, `kpathsea 6.4.3/dev`, `TeXLive 2026`.

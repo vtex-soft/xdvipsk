@@ -1,6 +1,6 @@
-# $Id: kpse-pkgs.m4 69664 2024-02-01 22:56:12Z karl $
+# $Id: kpse-pkgs.m4 77435 2026-01-21 17:39:52Z karl $
 # Private Autoconf macros for the TeX Live (TL) tree.
-# Copyright 2016-2024 Karl Berry <tex-live@tug.org>
+# Copyright 2016-2025 Karl Berry <tex-live@tug.org>
 # Copyright 2009-2015 Peter Breitenlohner <tex-live@tug.org>
 #
 # This file is free software; the copyright holder
@@ -25,29 +25,12 @@
 # Each library must precede required other libraries (if any).
 AC_DEFUN([KPSE_LIBS_PKGS], [dnl
 m4_define([kpse_libs_pkgs], [dnl
-pplib
-harfbuzz
-icu
-teckit
-graphite2
-zziplib
-xpdf
-mpfi
-mpfr
-gmp
-cairo
-pixman
-gd
-potrace
 freetype2
 libpng
-libpaper
-luajit
 lua53
 zlib
 ])[]dnl
 m4_define([kpse_texlibs_pkgs], [dnl
-ptexenc
 kpathsea
 ])]) # KPSE_LIBS_PKGS
 
@@ -77,28 +60,14 @@ AC_REQUIRE([KPSE_GRAPHITE2_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_TECKIT_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_ICU_SYSTEM_FLAGS])[]dnl
 AC_REQUIRE([KPSE_HARFBUZZ_SYSTEM_FLAGS])[]dnl
+AC_REQUIRE([KPSE_LUAJIT_SYSTEM_FLAGS])[]dnl
 ]) # KPSE_ALL_SYSTEM_FLAGS
 
 # KPSE_UTILS_PKGS()
 # -----------------
 # Define the list of utility sub-packages, i.e., subdirs 'utils/*'.
 AC_DEFUN([KPSE_UTILS_PKGS], [dnl
-m4_define([kpse_utils_pkgs], [dnl
-autosp
-axodraw2
-devnag
-lacheck
-m-tx
-pmx
-ps2eps
-t1utils
-texdoctk
-tpic2pdftex
-vlna
-xindy
-xml2pmx
-xpdfopen
-])]) # KPSE_UTILS_PKGS
+m4_define([kpse_utils_pkgs], [])]) # KPSE_UTILS_PKGS
 
 # KPSE_TEXK_PKGS()
 # ----------------
@@ -106,39 +75,7 @@ xpdfopen
 # excluding 'texk/kpathsea'.
 AC_DEFUN([KPSE_TEXK_PKGS], [dnl
 m4_define([kpse_texk_pkgs], [dnl
-web2c
-afm2pl
-bibtex-x
-chktex
-cjkutils
-detex
-dtl
-dvi2tty
-dvidvi
-dviljk
-dviout-util
-dvipdfm-x
-dvipng
-dvipos
-dvipsk
-dvisvgm
-gregorio
-gsftopk
-lcdf-typetools
-makeindexk
-makejvf
-mendexk
-musixtnt
-ps2pk
-psutils
-seetexk
-tex4htk
-ttf2pk2
-ttfdump
-upmendex
-xdvik
 xdvipsk
-texlive
 ])]) # KPSE_TEXK_PKGS
 
 # ------------------------------- #

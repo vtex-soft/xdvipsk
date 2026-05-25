@@ -1,0 +1,221 @@
+2026-03-23  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.14.3 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+
+2026-03-03  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.14.2 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+
+2025-09-12  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.14.1 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+
+2025-09-08  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.14.0 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+
+2024-08-13  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.13.3 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+
+2023-08-26  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.13.2 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+
+2023-06-25  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.13.1 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+	* patch-02-grep: remove.
+	* patch-05-windows-static: remove.
+
+2023-02-11  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.13.0 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+	* patch-01-do-not-export-internal-zlib: remove.
+	* patch-04-void-main: remove.
+	* patch-05-windows-static: add.
+
+2022-11-06  Karl Berry  <karl@freefriends.org>
+
+	* patch-01-do-not-export-internal-zlib: add.
+	* patch-04-void-main: add (see ../ChangeLog).
+
+2022-05-07  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.12.1 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+	Add do-not-export-internal-zlib.
+
+2021-12-03  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Import freetype-2.11.1 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+	Remove patch-01-support-old-compilers.
+	Remove patch-02-try-Nelson-flag.
+
+2021-09-07  Mojca Miklavec  <mojca.miklavec.lists@gmail.com>
+
+	Simplified patches for Solaris (fixed upstream).
+
+2021-09-01  Akira Kakuto  <kakuto@jcom.zaq.ne.jp>
+
+	Imported freetype-2.11.0 source tree from:
+	  http://download.savannah.gnu.org/releases/freetype.
+	Add patch-01-support-old-compilers.
+	Add patch-02-try-Nelson-flag.
+
+2020-10-21  Akira Kakuto  <kakuto@w32tex.org>
+
+	Imported freetype-2.10.4 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2020-10-11  Akira Kakuto  <kakuto@w32tex.org>
+
+	Imported freetype-2.10.3 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2020-05-10  Akira Kakuto  <kakuto@w32tex.org>
+
+	Imported freetype-2.10.2 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2019-07-02  Akira Kakuto  <kakuto@w32tex.org>
+
+	Imported freetype-2.10.1 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2019-05-03  Akira Kakuto  <kakuto@w32tex.org>
+
+	Imported freetype-2.10.0 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2018-05-04  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.9.1 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2018-01-09  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.9.0 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2017-09-16  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.8.1 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2017-06-20  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.8.0 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2016-12-30  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.7.1 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2016-09-13  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.7.0 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2016-07-12  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.6.5 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2016-07-07  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.6.4 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2016-02-12  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.6.3 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2015-12-28  Akira Kakuto  <kakuto@fuk.kindai.ac.jp>
+
+	Imported freetype-2.6.2 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2015-06-09  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.6 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+	* patch-01-cff (removed): Applied upstream.
+
+2015-04-29  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-01-cff (new): Backport patch from upstream
+	commit 3cc076dae by Jiang Jiang <gzjjgod@gmail.com>.
+
+2015-01-07  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.5.5 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2014-12-07  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.5.4 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2014-03-08  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.5.3 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2013-12-09  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.5.2 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2013-11-25  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.5.1 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+
+2013-06-21  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.5.0.1 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+	* patch-01-CONFIG_SHELL (removed): Applied upstream.
+	* patch-02-DISABLE_OLD_INTERNALS (removed): ditto.
+	* patch-03-RESPECT-MAKE (removed): ditto.
+
+2013-03-31  Mojca Miklavec  <mojca.miklavec.lists@gmail.com>
+
+	* patch-03-RESPECT-MAKE: Another update from git repository.
+
+2013-03-22  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-03-RESPECT-MAKE: Update from git repository.
+
+2013-03-21  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-03-RESPECT-MAKE (new): Backport from git repository.
+
+2013-03-03  Khaled Hosny  <khaledhosny@eglug.org>
+
+	* patch-02-DISABLE_OLD_INTERNALS (new): Build FreeType without
+	FT_CONFIG_OPTION_OLD_INTERNALS to fix a bug in loading some Mac fonts.
+	This is the default in the next FreeType release.
+
+2013-01-02  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	* patch-01-CONFIG_SHELL (new): Build fix for ancient systems
+	(e.g., AIX 4.3.3) with insuffient /bin/sh.
+
+2012-12-31  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	Imported freetype-2.4.11 source tree from:
+	  http://savannah.nongnu.org/download/freetype/
+

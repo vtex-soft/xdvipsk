@@ -1,0 +1,69 @@
+#
+# xdvipsk build targets
+#
+# Usage (from Build/source/):
+#   make -f Makefile.xdvipsk <target>
+#
+# Targets:
+#   macos-build      macOS arm64, bundled libjpeg/libtiff                 -> Work-macos/
+#   macos-sys-build  macOS arm64, system libjpeg/libtiff (Homebrew)       -> Work-macos-sys/
+#   win-build        Windows x86-64 cross-compile (mingw-w64)             -> Work-win/
+#   build            Build the Docker image (linux/amd64, Ubuntu 24.04)
+#   linux-build      Linux x86-64 build inside Docker                     -> Work-linux/
+#   run              Interactive shell inside the Docker container
+#
+# All builds are driven by ./Build (the TeX Live build driver).
+# Pass --no-clean to skip the clean step: make -f Makefile.xdvipsk macos-build EXTRA=--no-clean
+#
+
+NPROC  := $(shell sysctl -n hw.logicalcpu 2>/dev/null || nproc)
+COMMON := --disable-all-pkgs --enable-xdvipsk --without-x --disable-xetex --disable-xindy
+EXTRA  :=
+
+# ── macOS ────────────────────────────────────────────────────────────────────
+
+macos-build:
+	TL_WORKDIR=Work-macos \
+	TL_INSTALL_DEST=$(CURDIR)/Work-macos/inst \
+	TL_MAKE_FLAGS="-j $(NPROC)" \
+	TL_COMPILER_GFLAGS=-g \
+	TL_CONF_MISSING= TL_CONF_LARGEFILE= TL_CONF_SHARED= TL_CONF_XDVI_TOOLKIT= \
+	./Build $(EXTRA) -C $(COMMON)
+
+macos-sys-build:
+	TL_WORKDIR=Work-macos-sys \
+	TL_INSTALL_DEST=$(CURDIR)/Work-macos-sys/inst \
+	TL_MAKE_FLAGS="-j $(NPROC)" \
+	TL_COMPILER_GFLAGS=-g \
+	TL_CONF_MISSING= TL_CONF_LARGEFILE= TL_CONF_SHARED= TL_CONF_XDVI_TOOLKIT= \
+	CPPFLAGS="-I/opt/homebrew/opt/jpeg-turbo/include -I/opt/homebrew/opt/libtiff/include" \
+	LDFLAGS="-L/opt/homebrew/opt/jpeg-turbo/lib -L/opt/homebrew/opt/libtiff/lib" \
+	./Build $(EXTRA) -C $(COMMON) \
+	    --with-system-libjpeg --with-system-libtiff
+
+# ── Windows cross-compile (mingw-w64 from macOS) ─────────────────────────────
+
+win-build:
+	TL_WORKDIR=Work-win \
+	TL_INSTALL_DEST=$(CURDIR)/Work-win/inst \
+	TL_MAKE_FLAGS="-j $(NPROC)" \
+	TL_COMPILER_GFLAGS=-g \
+	TL_CONF_MISSING= TL_CONF_LARGEFILE= TL_CONF_SHARED= TL_CONF_XDVI_TOOLKIT= \
+	./Build $(EXTRA) -C \
+	    --host=x86_64-w64-mingw32 --build=aarch64-apple-darwin \
+	    $(COMMON)
+
+# ── Linux (Docker, linux/amd64, Ubuntu 24.04) ────────────────────────────────
+
+build:
+	docker build -t xdvipsk --platform linux/amd64 ..
+
+linux-build:
+	docker run --rm --platform linux/amd64 --user $(shell id -u):$(shell id -g) \
+	    -v $(CURDIR):/usr/local/src xdvipsk
+
+run:
+	docker run -i -t --platform linux/amd64 --user $(shell id -u):$(shell id -g) \
+	    -v $(CURDIR):/usr/local/src xdvipsk /bin/bash
+
+.PHONY: macos-build macos-sys-build win-build build linux-build run
