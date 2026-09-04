@@ -1,4 +1,4 @@
-.TH XDVIPSK 1 "10 April 2026"
+.TH XDVIPSK 1 "04 September 2026"
 .SH NAME
 xdvipsk \- convert a TeX DVI file to PostScript (dvips extexsion)
 .SH SYNOPSIS

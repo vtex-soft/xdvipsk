@@ -1,3 +1,42 @@
+2026-09-04  Sigitas Tolušis <sigitas@vtex.lt>
+
+	* sync with texlive-source git#dae52b9580.
+
+2026-05-25  Sigitas Tolušis <sigitas@vtex.lt>
+
+	* xdvips.c: version to 2026.05.25.
+
+	* Master/bin: update binaries to 2026.05.25
+
+	* glyphlist_table.lua, glyphlist_table.h: extend glyph-to-Unicode
+	table with ~360 entries from the newtx/newpx (ntx) and luaotf glyph
+	sets: blackboard-bold letters, math arrows and brackets, accent
+	combiners, and miscellaneous symbols.
+
+	* configure.ac, configure, Makefile.am, Makefile.in: add
+	--with-system-libjpeg and --with-system-libtiff options using KPSE
+	macro infrastructure; when a system library is chosen, the
+	corresponding bundled thirdparty/ sources are skipped entirely.
+
+	* autoconf/zziplib: fix zziplib AX_PREFIX_CONFIG_H macro
+	for autoconf 2.73 where $as_echo is not yet defined at the point
+	the macro expands.
+
+	* ../../../Makefile.xdvipsk, ../../../: add partial TeX Live source
+	tree (subset needed to build xdvipsk and its dependencies) with
+	Makefile.xdvipsk providing unified build targets for all platforms
+	via the ./Build wrapper; named work directories
+	(Work-macos, Work-macos-sys, Work-win, Work-linux).
+
+	* README.*: update building instructions for named Work-*
+	directories and ./Build wrapper; fix kpathsea version; add
+	ntx/luaotf to glyphlist description; mention Docker for Linux
+	builds.
+
+2026-04-16  Sigitas Tolušis <sigitas@vtex.lt>
+
+	* output.c: bug fix for dash in encoding name (MP).
+
 2026-04-10  Sigitas Tolušis <sigitas@vtex.lt>
 
 	* fulfill font maps tables (MP);

@@ -4,7 +4,7 @@
 	the xdvipsk project team - Sigitas Tolusis and Arunas Povilaitis.
 
     Program original code copyright by Floris van den Berg,
-	Hervï¿½ Drolon and Karl-Heinz Bussian, the FreeImage 3 project team.
+	Hervé Drolon and Karl-Heinz Bussian, the FreeImage 3 project team.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
